@@ -68,11 +68,17 @@ label{display:block;font-size:14px;color:var(--mut);margin:0 0 6px}
 .sw .pick i{width:26px;height:26px;border-radius:50%;border:1px solid var(--line)}
 .err{color:var(--co);font-size:14px;min-height:20px}
 /* dashboard */
-.top{display:flex;flex-direction:column;align-items:flex-start;gap:12px;margin-bottom:20px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
 #hello{font-weight:500;color:var(--mut)}
-.acts{display:flex;gap:8px;flex-wrap:nowrap;width:100%;overflow-x:auto}
-.acts .btn{min-height:44px;padding:8px 18px;font-size:14px;white-space:nowrap}
-@media(max-width:600px){.acts .btn{flex:1 1 0;padding:8px 6px;font-size:13px}}
+.menu{position:relative;flex:none}
+.hamb{width:46px;height:46px;display:grid;place-items:center;border-radius:14px;border:1px solid var(--line);background:var(--glass);color:var(--ink);cursor:pointer}
+.hamb svg,.pop svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.hamb[aria-expanded=true]{color:var(--cy);border-color:var(--cy);box-shadow:0 0 18px var(--glow)}
+.pop{position:absolute;right:0;top:calc(100% + 8px);z-index:9;min-width:210px;padding:6px;border-radius:16px;border:1px solid var(--line);background:var(--bg2);box-shadow:0 16px 40px rgba(0,0,0,.4),0 0 0 1px rgba(61,224,255,.06);animation:pop .15s ease-out;transform-origin:top right}
+.pop button{display:flex;align-items:center;gap:12px;width:100%;min-height:46px;padding:10px 12px;border:0;border-radius:11px;background:transparent;cursor:pointer;font-size:15px;font-weight:500;text-align:left}
+.pop button:hover,.pop button:focus-visible{background:var(--glow);color:var(--cy)}
+@keyframes pop{from{opacity:0;transform:scale(.96)}}
+@media(prefers-reduced-motion:reduce){.pop{animation:none}}
 .hero{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:20px;align-items:stretch}
 .stage{display:flex;flex-direction:column;border-radius:24px;overflow:hidden;border:1px solid var(--line);background:var(--bg2);box-shadow:0 0 0 1px rgba(61,224,255,.08),0 20px 50px -20px var(--glow)}
 .stage .lbl{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:16px 20px 14px;border-bottom:1px solid var(--line);position:relative}
@@ -187,12 +193,21 @@ td.r,th.r{text-align:right;white-space:nowrap;font-family:"Chakra Petch"}
 <main id="dash" class="wrap" hidden>
   <div class="top">
     <div class="brand"><i></i>EV Ledger <span id="hello"></span></div>
-    <div class="acts"><button class="btn ghost" id="instbtn" hidden>Install app</button><button class="btn ghost" id="bk" hidden>Backup</button><button class="btn ghost" id="rs" hidden>Restore</button><input type="file" id="restore-f" accept="application/json,.json"><button class="btn ghost" id="editp">Edit profile</button></div>
+    <div class="menu">
+      <button class="hamb" id="menubtn" aria-label="Menu" aria-haspopup="true" aria-expanded="false" aria-controls="menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <div class="pop" id="menu" role="menu" hidden>
+        <button role="menuitem" id="instbtn" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5"/><path d="M5 19h14"/></svg>Install app</button>
+        <button role="menuitem" id="bk" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5"/><path d="M5 14v5h14v-5"/></svg>Backup</button>
+        <button role="menuitem" id="rs" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5"/><path d="M5 14v5h14v-5"/></svg>Restore</button>
+        <button role="menuitem" id="editp"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c1.2-3.6 4-5.5 7-5.5s5.8 1.9 7 5.5"/></svg>Edit profile</button>
+      </div>
+      <input type="file" id="restore-f" accept="application/json,.json">
+    </div>
   </div>
 
   <section class="hero view" data-view="home">
     <div class="stage">
-      <div class="lbl"><div><span class="mut" id="v-sub"></span><h1 id="v-name"></h1></div><div><span class="chip" id="v-col"></span></div></div>
+      <div class="lbl"><div><span class="mut" id="v-sub"></span><h1 id="v-name"></h1></div></div>
       <div class="shot"><div class="scan"></div><div class="car" id="carimg"></div><div class="floor"></div></div>
     </div>
     <div class="kpis">
@@ -328,7 +343,6 @@ function showDash(){
  $("#onb").hidden=true;$("#dash").hidden=false;if(location.hash&&location.hash!=="#home"){try{location.replace("#home")}catch(e){}}go("home");
  const m=MODELS.find(x=>x.id===profile.model)||MODELS[0],col=(COLORS.find(c=>c[0]===profile.color)||COLORS[0]);
  $("#v-name").textContent="BYD "+m.name;$("#v-sub").textContent=profile.year+" model";
- $("#v-col").innerHTML=`<span class="dot" style="background:${col[1]}"></span>${esc(col[0])}`;
  $("#hello").textContent="("+profile.name+")";
  $("#carimg").innerHTML=MODEL_IMG[m.id]?`<img src="${MODEL_IMG[m.id]}" alt="BYD ${m.name}" style="object-position:${MODEL_POS[m.id]}">`:carSVG(m.type,col[1],"");
  $("#carimg").classList.toggle("photo",!!MODEL_IMG[m.id]);
@@ -437,6 +451,14 @@ function ask(t,b,yes,fn){$("#m-t").textContent=t;$("#m-b").textContent=b;$("#m-y
 $("#log").onclick=e=>{const b=e.target.closest("[data-del]");if(!b)return;const id=b.dataset.del;ask("Delete this expense?","This can't be undone.","Delete",async()=>{try{await store.del(id)}catch(e){}})};
 $("#m-no").onclick=()=>{$("#modal").style.display="none";onYes=null};
 $("#m-yes").onclick=async()=>{$("#modal").style.display="none";const f=onYes;onYes=null;if(f)await f()};
+
+/* header menu */
+const menu=$("#menu"),mbtn=$("#menubtn");
+function closeMenu(){menu.hidden=true;mbtn.setAttribute("aria-expanded","false")}
+mbtn.onclick=e=>{e.stopPropagation();const open=menu.hidden;menu.hidden=!open;mbtn.setAttribute("aria-expanded",String(open));if(open){const f=[...menu.querySelectorAll("button")].find(b=>!b.hidden);if(f)f.focus()}};
+menu.addEventListener("click",e=>{if(e.target.closest("button"))closeMenu()});
+document.addEventListener("click",e=>{if(!menu.hidden&&!e.target.closest(".menu"))closeMenu()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!menu.hidden){closeMenu();mbtn.focus()}});
 
 /* section navigation (bottom bar) */
 const VIEWS=["home","expense","report","log"];
