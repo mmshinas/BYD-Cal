@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BYD Expense Tracker</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#05080f">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="EV Ledger">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/*
+VOICE: a car's own cockpit display — calm, precise, glowing data on glass.
+IDEA: the in-car infotainment screen: your vehicle hero-lit, energy & cost readouts around it.
+PICTURE: the selected model, lit on a stage with a reflective floor and scan line (photo slot; tinted silhouette until photos arrive).
+COLOUR and TYPE: deep cabin night, electric cyan for energy, coral for service; Chakra Petch readouts + Sora text.
+LAYOUT: hero stage with car + key readouts, then monthly chart, breakdown, log; one column under 600px.
+*/
+:root{color-scheme:light dark;
+--bg:light-dark(#eef3f8,#05080f);--bg2:light-dark(#ffffff,#0b1220);--glass:light-dark(rgba(255,255,255,.75),rgba(18,28,48,.55));
+--line:light-dark(rgba(10,30,60,.12),rgba(120,200,255,.14));--ink:light-dark(#0b1424,#e8f1ff);--mut:light-dark(#566479,#8a9ab3);
+--cy:light-dark(#0090b8,#3de0ff);--co:light-dark(#e2553a,#ff7a59);--glow:light-dark(rgba(0,144,184,.18),rgba(61,224,255,.28))}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Sora,system-ui,sans-serif;overflow-x:clip;min-height:100vh;
+background-image:radial-gradient(ellipse 80% 50% at 70% -10%,var(--glow),transparent 70%),linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:auto,48px 48px,48px 48px}
+h1,h2,h3,.num,.brand{font-family:"Chakra Petch",sans-serif;letter-spacing:.01em}
+h1{font-size:clamp(32px,5vw,50px);line-height:1.05;margin:0 0 8px;text-wrap:balance}
+h2{font-size:22px;margin:0 0 14px}
+.mut{color:var(--mut)}
+.wrap{max-width:1240px;margin:0 auto;padding:clamp(20px,3vw,40px) max(4vw,16px)}
+.panel{background:var(--glass);border:1px solid var(--line);border-radius:20px;padding:clamp(18px,2.4vw,28px);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+button,input,select{font:inherit;font-size:16px;color:inherit}
+input,select{width:100%;min-height:46px;padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg2)}
+input:focus-visible,select:focus-visible,button:focus-visible,.pick:focus-within{outline:2px solid var(--cy);outline-offset:2px}
+label{display:block;font-size:14px;color:var(--mut);margin:0 0 6px}
+.btn{min-height:46px;padding:10px 22px;border-radius:999px;border:0;cursor:pointer;font-weight:600;background:var(--cy);color:light-dark(#fff,#04121a);box-shadow:0 0 24px var(--glow)}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line);box-shadow:none}
+.row{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+/* splash */
+#splash{display:grid;place-items:center;min-height:100vh}
+.ring{width:64px;height:64px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--cy);animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+/* onboarding */
+#onb .head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:28px}
+.brand{font-weight:700;font-size:18px;display:flex;gap:10px;align-items:center}
+.brand i{width:12px;height:12px;border-radius:50%;background:var(--cy);box-shadow:0 0 14px var(--cy)}
+.steps{display:flex;gap:8px}.steps b{width:34px;height:4px;border-radius:4px;background:var(--line)}.steps b.on{background:var(--cy)}
+.models{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+.pick{position:relative;cursor:pointer;border:1px solid var(--line);border-radius:16px;padding:14px;background:var(--bg2);transition:border-color .2s,transform .2s}
+.pick input{position:absolute;opacity:0;width:1px;height:1px}
+.pick:has(input:checked){border-color:var(--cy);box-shadow:0 0 0 1px var(--cy),0 0 28px var(--glow)}
+.pick svg{width:100%;height:60px;display:block}
+.models .pick{padding:0;overflow:hidden}
+.models .pick img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;background:#fff;transition:transform .4s}
+.models .pick:hover img,.models .pick:has(input:checked) img{transform:scale(1.04)}
+.models .pick span{display:block;padding:10px 14px}
+.pick span{font-family:"Chakra Petch";font-weight:600}
+.sw{display:flex;flex-wrap:wrap;gap:10px}
+.sw .pick{padding:8px 14px 8px 8px;display:flex;align-items:center;gap:10px;border-radius:999px;min-height:44px}
+.sw .pick i{width:26px;height:26px;border-radius:50%;border:1px solid var(--line)}
+.err{color:var(--co);font-size:14px;min-height:20px}
+/* dashboard */
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+.hero{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:20px;align-items:stretch}
+.stage{position:relative;border-radius:24px;overflow:hidden;min-height:320px;border:1px solid var(--line);
+background:radial-gradient(ellipse 70% 60% at 50% 70%,var(--glow),transparent 70%),linear-gradient(180deg,light-dark(#dfe9f3,#0a1426),light-dark(#f7fbff,#05080f))}
+.stage .lbl{position:absolute;left:22px;top:18px;right:22px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.stage .lbl h1{font-size:clamp(28px,4vw,44px)}
+.stage .car{position:absolute;left:4%;right:4%;bottom:8%;height:62%;display:flex;align-items:flex-end;justify-content:center}
+.stage .car img,.stage .car svg{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 20px 24px rgba(0,0,0,.35))}
+.stage .car.photo{inset:0;height:auto}
+.stage .car.photo img{width:100%;height:100%;max-height:none;object-fit:cover;filter:none}
+.stage:has(.photo) .floor{display:none}
+.stage:has(.photo)::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(3,8,18,.72),rgba(3,8,18,0) 42%),linear-gradient(0deg,rgba(61,224,255,.18),transparent 25%);box-shadow:inset 0 0 0 1px rgba(61,224,255,.25)}
+.stage:has(.photo) .lbl{z-index:2;color:#fff}.stage:has(.photo) .lbl .mut{color:rgba(255,255,255,.8)}
+.stage:has(.photo) .chip{background:rgba(5,10,20,.55);color:#fff;border-color:rgba(255,255,255,.25)}
+.stage .scan{z-index:2}
+.stage .floor{position:absolute;left:0;right:0;bottom:0;height:16%;background:linear-gradient(180deg,transparent,var(--glow));border-top:1px solid var(--line)}
+.scan{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--cy),transparent);opacity:.6;animation:scan 5s ease-in-out infinite}
+@keyframes scan{0%,100%{top:30%}50%{top:88%}}
+@media(prefers-reduced-motion:reduce){.scan,.ring{animation:none}}
+.chip{font-size:13px;padding:4px 12px;border:1px solid var(--line);border-radius:999px;background:var(--glass);white-space:nowrap}
+.kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.kpi{padding:16px;border-radius:18px;border:1px solid var(--line);background:var(--glass)}
+.kpi .num{font-size:clamp(22px,2.6vw,30px);font-weight:700;white-space:nowrap}
+.kpi.big{grid-column:1/-1}.kpi.big .num{font-size:clamp(34px,4.4vw,48px);color:var(--cy);text-shadow:0 0 22px var(--glow)}
+.kpi small{color:var(--mut);font-size:13px}
+.kpi.km .num{font-size:clamp(26px,3vw,34px);color:var(--ink);text-shadow:none}
+.req{font-size:12px;color:var(--co);margin-left:4px}
+.up{color:var(--co)}.dn{color:light-dark(#0a8f5a,#4ade80)}
+.mid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:20px;margin-top:20px}
+.fig{position:relative;min-height:300px}.fig>svg{position:absolute;inset:0;width:100%;height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:13px;color:var(--mut);margin-top:10px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.bar{display:grid;grid-template-columns:110px minmax(0,1fr) auto;gap:10px;align-items:center;font-size:14px;margin:10px 0}
+.bar .t{height:10px;border-radius:10px;background:var(--line);overflow:hidden}.bar .t b{display:block;height:100%;border-radius:10px}
+.bar .v{font-family:"Chakra Petch";white-space:nowrap;text-align:right}
+.low{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:20px;margin-top:20px}
+.seg{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.seg button{min-height:44px;padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:transparent;cursor:pointer;font-size:14px}
+.seg button.on{background:var(--cy);color:light-dark(#fff,#04121a);border-color:var(--cy)}
+.calc{display:flex;justify-content:space-between;align-items:baseline;padding:14px 16px;border-radius:14px;border:1px dashed var(--cy);margin:4px 0 14px}
+.calc .num{font-size:26px;color:var(--cy)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;color:var(--mut);font-weight:500;padding:8px;border-bottom:1px solid var(--line)}
+td{padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+td.r,th.r{text-align:right;white-space:nowrap;font-family:"Chakra Petch"}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:8px}
+.x{background:none;border:0;cursor:pointer;color:var(--mut);min-width:44px;min-height:44px;border-radius:10px;font-size:18px}
+.x:hover{color:var(--co)}
+.scroll{overflow-x:auto;max-height:520px;overflow-y:auto}
+.empty{padding:30px;text-align:center;color:var(--mut)}
+.note{font-size:13px;color:var(--mut);margin-top:14px}
+.toolbar{display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.toolbar select{width:auto}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;place-items:center;padding:16px;z-index:9}
+#modal .panel{max-width:420px;background:var(--bg2)}
+#inst{position:fixed;left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom));z-index:8;max-width:520px;margin:0 auto;display:flex;gap:14px;align-items:center;padding:14px 14px 14px 16px;border-radius:20px;border:1px solid var(--cy);background:var(--bg2);box-shadow:0 10px 40px rgba(0,0,0,.35),0 0 30px var(--glow);animation:up .4s ease-out}
+#inst img{width:48px;height:48px;border-radius:12px;flex:none}
+#inst b{font-family:"Chakra Petch";font-size:17px;display:block}
+#inst p{margin:2px 0 0;font-size:13px;color:var(--mut)}
+#inst .btn{padding:10px 16px;flex:none}
+@keyframes up{from{transform:translateY(30px);opacity:0}}
+@media(prefers-reduced-motion:reduce){#inst{animation:none}}
+#restore-f{display:none}
+[hidden]{display:none!important}
+@media(max-width:900px){.hero,.mid,.low{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:600px){.g2,.g3{grid-template-columns:minmax(0,1fr)}.stage{min-height:260px}.bar{grid-template-columns:86px minmax(0,1fr) auto}
+.stack thead{display:none}.stack tr{display:grid;padding-block:10px;border-bottom:1px solid var(--line)}.stack td{display:flex;justify-content:space-between;gap:12px;border:0;padding:4px 0}.stack td::before{content:attr(data-l);color:var(--mut);font-family:Sora}}
+</style>
+</head>
+<body>
+<div id="splash"><div class="ring" aria-label="Loading"></div></div>
+
+<!-- ONBOARDING -->
+<main id="onb" class="wrap" hidden>
+  <div class="head"><div class="brand"><i></i>EV Ledger</div><div class="steps"><b class="on"></b><b id="st2"></b></div></div>
+  <section class="panel">
+    <h1>Activate your vehicle profile</h1>
+    <p class="mut" style="margin:0 0 24px">One-time setup. Next time you'll land straight on your dashboard.</p>
+    <form id="pf" novalidate>
+      <div class="row g2">
+        <div><label for="p-name">Your name</label><input id="p-name" autocomplete="name" required></div>
+        <div><label for="p-email">Email address</label><input id="p-email" type="email" autocomplete="email" required></div>
+      </div>
+      <h2 style="margin-top:28px">Choose your model</h2>
+      <div class="models" id="models"></div>
+      <div class="row g2" style="margin-top:24px">
+        <div><label for="p-year">Manufactured year</label><select id="p-year"></select></div>
+        <div><label for="p-cur">Currency</label><select id="p-cur"><option>LKR</option><option>USD</option><option>AED</option><option>INR</option><option>AUD</option><option>GBP</option><option>EUR</option></select></div>
+      </div>
+      <h2 style="margin-top:28px">Exterior colour</h2>
+      <div class="sw" id="colors"></div>
+      <p class="err" id="perr"></p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" type="submit">Launch dashboard →</button><button class="btn ghost" type="button" id="pcancel" hidden>Cancel</button></div>
+    </form>
+  </section>
+</main>
+
+<!-- DASHBOARD -->
+<main id="dash" class="wrap" hidden>
+  <div class="top">
+    <div class="brand"><i></i>EV Ledger</div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="chip" id="hello"></span><button class="btn ghost" id="instbtn" hidden>Install app</button><button class="btn ghost" id="bk" hidden>Backup</button><button class="btn ghost" id="rs" hidden>Restore</button><input type="file" id="restore-f" accept="application/json,.json"><button class="btn ghost" id="editp">Edit profile</button></div>
+  </div>
+
+  <section class="hero">
+    <div class="stage">
+      <div class="lbl"><div><span class="mut" id="v-sub"></span><h1 id="v-name"></h1></div><div><span class="chip" id="v-col"></span></div></div>
+      <div class="scan"></div>
+      <div class="car" id="carimg"></div>
+      <div class="floor"></div>
+    </div>
+    <div class="kpis">
+      <div class="kpi big"><small id="k-mlabel">This month</small><div class="num" id="k-month">—</div><small id="k-delta"></small></div>
+      <div class="kpi"><small>All-time spend</small><div class="num" id="k-all">—</div></div>
+      <div class="kpi"><small>Energy this month</small><div class="num" id="k-kwh">—</div></div>
+      <div class="kpi"><small>Avg cost per unit</small><div class="num" id="k-rate">—</div></div>
+      <div class="kpi"><small>Charging share</small><div class="num" id="k-share">—</div></div>
+      <div class="kpi big km"><small>Running cost per km</small><div class="num" id="k-km">—</div><small id="k-kmsub">Needs two charging sessions with odometer readings</small></div>
+    </div>
+  </section>
+
+  <section class="mid">
+    <div class="panel"><h2>Monthly spend · last 12 months</h2><div class="fig"><svg id="chart" role="img" aria-label="Monthly expenses stacked by category"></svg></div><div class="legend" id="legend"></div></div>
+    <div class="panel"><div class="toolbar"><h2 style="margin:0">Month analysis</h2><select id="msel" aria-label="Month"></select></div><div id="breakdown"></div><div class="note" id="mnote"></div></div>
+  </section>
+
+  <section class="low">
+    <div class="panel">
+      <h2>Log an expense</h2>
+      <div class="seg" id="cats"></div>
+      <form id="ef" novalidate>
+        <div class="row g2"><div><label for="e-date">Date</label><input id="e-date" type="date" required></div><div><label for="e-odo" id="odo-l">Odometer (km) <span class="req">required</span></label><input id="e-odo" type="number" inputmode="numeric" min="0" step="1"></div></div>
+        <p class="note" id="odo-hint" style="margin:6px 0 0"></p>
+        <div id="chg" style="margin-top:14px">
+          <div class="row g2"><div><label for="e-units">Units used (kWh)</label><input id="e-units" type="number" step="0.01" min="0" inputmode="decimal"></div><div><label for="e-rate">Charge per unit</label><input id="e-rate" type="number" step="0.01" min="0" inputmode="decimal"></div></div>
+          <div style="margin-top:14px"><label for="e-where">Charged at</label><select id="e-where"><option>Home</option><option>Public AC</option><option>Public DC fast</option><option>Workplace</option></select></div>
+          <div class="calc" style="margin-top:14px"><span class="mut">Total cost</span><span class="num" id="e-total">0.00</span></div>
+        </div>
+        <div id="oth" hidden style="margin-top:14px"><label for="e-amt">Amount</label><input id="e-amt" type="number" step="0.01" min="0" inputmode="decimal"></div>
+        <div style="margin-top:14px"><label for="e-note">Note (optional)</label><input id="e-note" maxlength="120" placeholder="e.g. 10,000 km service, Colombo"></div>
+        <p class="err" id="eerr"></p>
+        <button class="btn" type="submit" style="width:100%">Save expense</button>
+      </form>
+      <p class="note" id="store-note"></p>
+    </div>
+    <div class="panel">
+      <div class="toolbar"><h2 style="margin:0">Expense log</h2><select id="lsel" aria-label="Filter log by month"></select></div>
+      <div class="scroll"><table class="stack"><thead><tr><th>Date</th><th>Category</th><th>Details</th><th class="r">Amount</th><th></th></tr></thead><tbody id="log"></tbody></table><div class="empty" id="empty">No expenses logged yet. Add your first charge on the left.</div></div>
+    </div>
+  </section>
+</main>
+
+<div id="inst" role="dialog" aria-label="Install app" hidden><img src="icons/icon-192.png" alt=""><div style="flex:1"><b>Install EV Ledger</b><p id="inst-t">Add it to your home screen — opens full-screen and works offline.</p></div><button class="btn" id="inst-go">Install</button><button class="x" id="inst-x" aria-label="Not now">✕</button></div>
+<div id="modal" role="dialog" aria-modal="true"><div class="panel"><h2 id="m-t">Delete this expense?</h2><p class="mut" id="m-b">This can't be undone.</p><div style="display:flex;gap:10px;justify-content:flex-end"><button class="btn ghost" id="m-no">Cancel</button><button class="btn" id="m-yes">Delete</button></div></div></div>
+
+<script>
+{
+const $=s=>document.querySelector(s);
+const MODELS=[{id:"dolphin",name:"Dolphin Dynamic 70",type:"hatch"},{id:"atto1",name:"Atto 1",type:"hatch"},{id:"atto2",name:"Atto 2",type:"suv"},{id:"atto3",name:"Atto 3",type:"suv"},{id:"seal",name:"Seal",type:"sedan"}];
+/* Model photos (img/ folder) and where each car sits in its frame */
+const MODEL_IMG={dolphin:"img/dolphin.jpg",atto1:"img/atto1.jpg",atto2:"img/atto2.jpg",atto3:"img/atto3.jpg",seal:"img/seal.jpg"};
+const MODEL_POS={dolphin:"50% 55%",atto1:"50% 58%",atto2:"50% 52%",atto3:"50% 55%",seal:"50% 50%"};
+const COLORS=[["Ski White","#f1f3f5"],["Cosmos Black","#15171c"],["Atlantis Grey","#7d8790"],["Surf Blue","#3c7fbf"],["Coral Pink","#ef8f86"],["Arctic Blue","#a9d4ea"],["Harbour Grey","#5b6670"],["Shadow Green","#4d6b5a"],["Racing Red","#b8232f"],["Sandstone","#c8b593"]];
+const CATS=[{id:"charging",n:"Charging",c:"#3de0ff"},{id:"maintenance",n:"Maintenance",c:"#ff7a59"},{id:"wash",n:"Body wash",c:"#8b7bff"},{id:"tyres",n:"Tyres",c:"#ffc94a"},{id:"insurance",n:"Insurance",c:"#4ade80"},{id:"parking",n:"Parking & tolls",c:"#f472b6"},{id:"other",n:"Other",c:"#94a3b8"}];
+const catOf=id=>CATS.find(c=>c.id===id)||CATS[6];
+const SIL={
+ sedan:"M30 150 Q30 122 70 114 L170 102 Q235 62 310 58 L395 60 Q455 66 505 100 L555 112 Q578 120 576 150 Z",
+ suv:"M32 150 Q30 112 66 104 L150 96 Q195 52 270 48 L420 50 Q470 54 510 92 L556 104 Q576 112 574 150 Z",
+ hatch:"M34 150 Q32 116 66 108 L150 98 Q205 54 285 50 L420 54 Q480 60 520 102 L554 112 Q574 120 572 150 Z"};
+const WIN={sedan:"M190 102 Q245 72 310 70 L385 72 Q430 78 462 102 Z",suv:"M168 96 Q205 64 270 62 L415 63 Q455 68 482 96 Z",hatch:"M172 98 Q215 66 285 64 L415 66 Q460 72 492 100 Z"};
+const carSVG=(type,col,h)=>`<svg viewBox="0 0 600 200" ${h?'':'style="height:100%"'} aria-hidden="true"><defs><linearGradient id="g${type}${h}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${col}"/><stop offset="1" stop-color="${col}" stop-opacity=".55"/></linearGradient></defs><ellipse cx="300" cy="186" rx="250" ry="10" fill="rgba(0,0,0,.25)"/><path d="${SIL[type]}" fill="url(#g${type}${h})" stroke="rgba(120,200,255,.5)" stroke-width="1.5"/><path d="${WIN[type]}" fill="rgba(10,20,35,.75)"/><path d="M60 128 L540 128" stroke="rgba(61,224,255,.7)" stroke-width="2"/>${[150,455].map(x=>`<circle cx="${x}" cy="152" r="34" fill="#0b0f16"/><circle cx="${x}" cy="152" r="18" fill="#2a3240" stroke="#3de0ff" stroke-width="2"/>`).join('')}</svg>`;
+
+let store=null,profile=null,expenses=[],unsub=null,cat="charging",pendingDel=null;
+const fmt=n=>(profile?.currency||"LKR")+" "+(+n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmt0=n=>(+n||0).toLocaleString(undefined,{maximumFractionDigits:0});
+const mkey=d=>d.slice(0,7);
+const mname=k=>{const[y,m]=k.split("-");return new Date(+y,+m-1,1).toLocaleString(undefined,{month:"short",year:"numeric"})};
+const today=()=>{const d=new Date();return new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,10)};
+const lastMonths=n=>{const out=[],d=new Date();for(let i=n-1;i>=0;i--){const x=new Date(d.getFullYear(),d.getMonth()-i,1);out.push(x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0"))}return out};
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* ---------- storage: cloud db (follows you across devices) with local fallback ---------- */
+const LS="byd-ledger-v1";
+const local={mode:"local",
+ read(){try{return JSON.parse(localStorage.getItem(LS))||{}}catch(e){return{}}},
+ write(o){try{localStorage.setItem(LS,JSON.stringify(o))}catch(e){}},
+ async getProfile(){return this.read().profile||null},
+ async saveProfile(p){const o=this.read();o.profile=p;this.write(o)},
+ watch(cb){cb(this.read().expenses||[]);return()=>{}},
+ async add(e){const o=this.read();o.expenses=[...(o.expenses||[]),e];this.write(o);setExp(o.expenses)},
+ async del(id){const o=this.read();o.expenses=(o.expenses||[]).filter(x=>x.id!==id);this.write(o);setExp(o.expenses)}};
+async function cloud(){
+ const c=window.claude;if(!c||!c.use)return null;
+ const tm=new Promise(r=>setTimeout(()=>r(null),9000));
+ const db=await Promise.race([c.use("db"),tm]);if(!db)return null;
+ const u=await Promise.race([c.use("user"),tm]);const uid=u?await u.id():null;if(!uid)return null;
+ const pref=db.doc("data/users/"+uid+"/profile"),col=pref.collection("expenses");
+ return{mode:"cloud",
+  async getProfile(){const s=await pref.get();return s.exists?s.data():null},
+  async saveProfile(p){await pref.set(p)},
+  watch(cb){return col.onSnapshot(s=>cb(s.docs.map(d=>({...d.data(),id:d.id}))),e=>{$("#store-note").textContent="Sync paused — reload to reconnect."})},
+  async add(e){const{id,...b}=e;await col.doc(id).set(b)},
+  async del(id){await col.doc(id).delete()}};
+}
+
+/* ---------- onboarding ---------- */
+function buildOnb(){
+ $("#models").innerHTML=MODELS.map((m,i)=>`<label class="pick"><input type="radio" name="model" value="${m.id}" ${i===0?'checked':''}><img src="${MODEL_IMG[m.id]}" alt="" style="object-position:${MODEL_POS[m.id]}" loading="lazy"><span>${m.name}</span></label>`).join('');
+ const y=new Date().getFullYear();$("#p-year").innerHTML=Array.from({length:8},(_,i)=>`<option>${y-i}</option>`).join('');
+ $("#colors").innerHTML=COLORS.map((c,i)=>`<label class="pick"><input type="radio" name="color" value="${c[0]}" ${i===0?'checked':''}><i style="background:${c[1]}"></i>${c[0]}</label>`).join('');
+}
+function fillOnb(p){
+ $("#p-name").value=p.name;$("#p-email").value=p.email;$("#p-year").value=p.year;$("#p-cur").value=p.currency||"LKR";
+ const m=document.querySelector(`input[name=model][value="${p.model}"]`);if(m)m.checked=true;
+ const c=document.querySelector(`input[name=color][value="${p.color}"]`);if(c)c.checked=true;
+}
+$("#pf").addEventListener("submit",async ev=>{
+ ev.preventDefault();
+ const name=$("#p-name").value.trim(),email=$("#p-email").value.trim();
+ if(!name){$("#perr").textContent="Please enter your name.";return}
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){$("#perr").textContent="Please enter a valid email address.";return}
+ const p={name,email,model:document.querySelector("input[name=model]:checked").value,year:+$("#p-year").value,color:document.querySelector("input[name=color]:checked").value,currency:$("#p-cur").value,created:profile?.created||new Date().toISOString()};
+ $("#perr").textContent="";
+ try{await store.saveProfile(p)}catch(e){$("#perr").textContent="Couldn't save — please try again.";return}
+ profile=p;showDash();
+});
+$("#pcancel").onclick=showDash;
+$("#editp").onclick=()=>{fillOnb(profile);$("#pcancel").hidden=false;$("#dash").hidden=true;$("#onb").hidden=false;scrollTo(0,0)};
+
+/* ---------- dashboard ---------- */
+function showDash(){
+ $("#onb").hidden=true;$("#dash").hidden=false;
+ const m=MODELS.find(x=>x.id===profile.model)||MODELS[0],col=(COLORS.find(c=>c[0]===profile.color)||COLORS[0]);
+ $("#v-name").textContent="BYD "+m.name;$("#v-sub").textContent=profile.year+" model";
+ $("#v-col").innerHTML=`<span class="dot" style="background:${col[1]}"></span>${esc(col[0])}`;
+ $("#hello").textContent="Hi, "+profile.name.split(" ")[0];
+ $("#carimg").innerHTML=MODEL_IMG[m.id]?`<img src="${MODEL_IMG[m.id]}" alt="BYD ${m.name}" style="object-position:${MODEL_POS[m.id]}">`:carSVG(m.type,col[1],"");
+ $("#carimg").classList.toggle("photo",!!MODEL_IMG[m.id]);
+ $("#bk").hidden=$("#rs").hidden=store.mode!=="local";
+ $("#store-note").textContent=store.mode==="cloud"?"Saved to your account — available on any device you open this page on.":"Saved on this device — use Backup now and then to keep a copy.";
+ if(!unsub)unsub=store.watch(setExp);
+ render();
+}
+function setExp(list){expenses=[...list].sort((a,b)=>b.date.localeCompare(a.date)||(b.ts||0)-(a.ts||0));render()}
+
+function render(){
+ if($("#dash").hidden)return;
+ const months=lastMonths(12),cur=months[11],prev=months[10];
+ const byM={};expenses.forEach(e=>{const k=mkey(e.date);(byM[k]=byM[k]||{tot:0,kwh:0,chg:0,cats:{}});byM[k].tot+=e.amount;byM[k].cats[e.cat]=(byM[k].cats[e.cat]||0)+e.amount;if(e.cat==="charging"){byM[k].kwh+=e.units||0;byM[k].chg+=e.amount}});
+ const c=byM[cur]||{tot:0,kwh:0,chg:0},p=byM[prev]||{tot:0};
+ $("#k-mlabel").textContent=mname(cur);$("#k-month").textContent=fmt(c.tot);
+ if(p.tot>0){const d=(c.tot-p.tot)/p.tot*100;$("#k-delta").innerHTML=`<span class="${d>0?'up':'dn'}">${d>0?'▲':'▼'} ${Math.abs(d).toFixed(0)}%</span> vs ${mname(prev)}`}else $("#k-delta").textContent="No spend recorded last month";
+ const all=expenses.reduce((s,e)=>s+e.amount,0);$("#k-all").textContent=fmt(all);
+ $("#k-kwh").textContent=fmt0(c.kwh)+" kWh";
+ const ch=expenses.filter(e=>e.cat==="charging"),u=ch.reduce((s,e)=>s+(e.units||0),0),a=ch.reduce((s,e)=>s+e.amount,0);
+ $("#k-rate").textContent=u?fmt(a/u):"—";$("#k-share").textContent=all?Math.round(a/all*100)+"%":"—";
+ /* running cost per km: energy bought at one charge is used over the km driven until the next charge */
+ const legs=chargeLegs();
+ if(legs.size){let cost=0,km=0;legs.forEach(l=>{cost+=l.cost;km+=l.km});
+  const last=[...legs.values()].sort((a,b)=>b.odo-a.odo)[0];
+  $("#k-km").textContent=fmt(cost/km)+" /km";
+  $("#k-kmsub").textContent=`Over ${fmt0(km)} km · last leg ${fmt(last.cost/last.km)}/km (${fmt0(last.km)} km)`;
+ }else{$("#k-km").textContent="—";$("#k-kmsub").textContent="Needs two charging sessions with odometer readings"}
+ odoHint();
+ /* month selects */
+ const keys=[...new Set([cur,...expenses.map(e=>mkey(e.date))])].sort().reverse();
+ for(const id of["#msel","#lsel"]){const s=$(id),v=s.value;s.innerHTML=(id==="#lsel"?'<option value="all">All months</option>':'')+keys.map(k=>`<option value="${k}">${mname(k)}</option>`).join('');s.value=keys.includes(v)||v==="all"?v:(id==="#lsel"?"all":cur)}
+ breakdown(byM);drawLog();chartData=months.map(k=>({k,cats:(byM[k]||{}).cats||{},tot:(byM[k]||{}).tot||0}));draw();
+ $("#legend").innerHTML=CATS.map(c=>`<span><i style="background:${c.c}"></i>${c.n}</span>`).join('');
+}
+function breakdown(byM){
+ const k=$("#msel").value,m=byM[k];
+ if(!m){$("#breakdown").innerHTML=`<div class="empty">Nothing logged for ${mname(k)}.</div>`;$("#mnote").textContent="";return}
+ const rows=CATS.filter(c=>m.cats[c.id]).sort((a,b)=>m.cats[b.id]-m.cats[a.id]),mx=Math.max(...rows.map(c=>m.cats[c.id]));
+ $("#breakdown").innerHTML=`<div class="kpi" style="margin-bottom:8px"><small>Total for ${mname(k)}</small><div class="num">${fmt(m.tot)}</div></div>`+rows.map(c=>`<div class="bar"><span>${c.n}</span><span class="t"><b style="width:${m.cats[c.id]/mx*100}%;background:${c.c}"></b></span><span class="v">${fmt0(m.cats[c.id])} · ${Math.round(m.cats[c.id]/m.tot*100)}%</span></div>`).join('');
+ $("#mnote").textContent=m.kwh?`${fmt0(m.kwh)} kWh charged at an average of ${fmt(m.chg/m.kwh)} per unit.`:"";
+}
+/* charging sessions with odometer, in odometer order; each later session gets the leg since the previous one */
+function charges(){return expenses.filter(e=>e.cat==="charging"&&e.odo>0).sort((a,b)=>a.odo-b.odo||a.date.localeCompare(b.date))}
+function chargeLegs(){const c=charges(),m=new Map();for(let i=1;i<c.length;i++){const km=c[i].odo-c[i-1].odo;if(km>0)m.set(c[i].id,{km,cost:c[i-1].amount,odo:c[i].odo})}return m}
+function odoBounds(date){const c=charges();let lo=null,hi=null;c.forEach(e=>{if(e.date<=date&&(!lo||e.odo>lo.odo))lo=e;if(e.date>date&&(!hi||e.odo<hi.odo))hi=e});return{lo,hi}}
+function odoHint(){const h=$("#odo-hint");if(cat!=="charging"){h.textContent="";return}const{lo}=odoBounds($("#e-date").value||today());h.textContent=lo?`Last charge: ${fmt0(lo.odo)} km on ${lo.date}`:"First charge — this reading starts your cost-per-km tracking."}
+function drawLog(){
+ const legs=chargeLegs();
+ const f=$("#lsel").value,list=f==="all"?expenses:expenses.filter(e=>mkey(e.date)===f);
+ $("#empty").hidden=list.length>0;
+ $("#log").innerHTML=list.map(e=>{const c=catOf(e.cat);const det=e.cat==="charging"?`${e.units} kWh × ${e.rate} · ${esc(e.where||"")}`:"";return`<tr><td data-l="Date">${e.date}</td><td data-l="Category"><span><span class="dot" style="background:${c.c}"></span>${c.n}</span></td><td data-l="Details" class="mut">${[det,esc(e.note),e.odo?fmt0(e.odo)+" km":""].filter(Boolean).join(" · ")||"—"}${legs.has(e.id)?`<br><span style="color:var(--cy)">${fmt0(legs.get(e.id).km)} km since last charge · ${fmt(legs.get(e.id).cost/legs.get(e.id).km)}/km</span>`:""}</td><td data-l="Amount" class="r">${fmt(e.amount)}</td><td><button class="x" data-del="${e.id}" aria-label="Delete">✕</button></td></tr>`}).join('');
+}
+let chartData=[];
+const svg=$("#chart");
+function draw(){
+ const W=svg.clientWidth,H=svg.clientHeight;if(!W)return;
+ const sm=W<520,pl=sm?8:56,pb=28,pt=12,iw=W-pl-8,ih=H-pb-pt;
+ const mx=Math.max(1,...chartData.map(d=>d.tot));const nice=Math.pow(10,Math.floor(Math.log10(mx)));const top=Math.ceil(mx/nice)*nice;
+ const bw=iw/chartData.length;let o="";
+ if(!sm)for(let i=0;i<=4;i++){const y=pt+ih-ih*i/4;o+=`<line x1="${pl}" x2="${W-8}" y1="${y}" y2="${y}" stroke="var(--line)"/><text x="${pl-8}" y="${y+4}" text-anchor="end" font-size="11" fill="var(--mut)">${fmt0(top*i/4)}</text>`}
+ chartData.forEach((d,i)=>{let y=pt+ih;const x=pl+i*bw+bw*.18,w=bw*.64;
+  CATS.forEach(c=>{const v=d.cats[c.id]||0;if(!v)return;const h=v/top*ih;y-=h;o+=`<rect x="${x}" y="${y}" width="${w}" height="${Math.max(h-1,1)}" rx="3" fill="${c.c}"><title>${mname(d.k)} · ${c.n}: ${fmt(v)}</title></rect>`});
+  if(!sm||i%2===1)o+=`<text x="${x+w/2}" y="${H-8}" text-anchor="middle" font-size="11" fill="var(--mut)">${mname(d.k).split(" ")[0]}</text>`});
+ if(!expenses.length)o+=`<text x="${pl+iw/2}" y="${pt+ih/2}" text-anchor="middle" fill="var(--mut)" font-size="14">Your monthly chart builds as you log expenses</text>`;
+ svg.innerHTML=o;
+}
+new ResizeObserver(draw).observe(svg);
+$("#msel").onchange=render;$("#lsel").onchange=drawLog;
+
+/* expense form */
+$("#cats").innerHTML=CATS.map(c=>`<button type="button" data-cat="${c.id}" class="${c.id===cat?'on':''}">${c.n}</button>`).join('');
+$("#cats").onclick=e=>{const b=e.target.closest("button");if(!b)return;cat=b.dataset.cat;document.querySelectorAll("#cats button").forEach(x=>x.classList.toggle("on",x===b));$("#chg").hidden=cat!=="charging";$("#oth").hidden=cat==="charging";$("#odo-l").innerHTML=cat==="charging"?'Odometer (km) <span class="req">required</span>':'Odometer (km, optional)';odoHint()};
+$("#e-date").addEventListener("change",odoHint);
+const calc=()=>{const t=(+$("#e-units").value||0)*(+$("#e-rate").value||0);$("#e-total").textContent=fmt(t);return t};
+$("#e-units").oninput=calc;$("#e-rate").oninput=calc;
+$("#e-date").value=today();
+$("#ef").addEventListener("submit",async ev=>{
+ ev.preventDefault();const err=$("#eerr");err.textContent="";
+ const date=$("#e-date").value;if(!date){err.textContent="Pick a date.";return}
+ const e={id:"x"+Date.now().toString(36)+Math.random().toString(36).slice(2,6),date,cat,note:$("#e-note").value.trim(),odo:+$("#e-odo").value||0,ts:Date.now()};
+ if(cat==="charging"){e.units=+$("#e-units").value;e.rate=+$("#e-rate").value;e.where=$("#e-where").value;
+  if(!(e.odo>0)){err.textContent="Enter the odometer reading — it's needed to work out cost per km.";$("#e-odo").focus();return}
+  const{lo,hi}=odoBounds(date);
+  if(lo&&e.odo<=lo.odo){err.textContent=`Odometer must be higher than ${fmt0(lo.odo)} km (charge on ${lo.date}).`;$("#e-odo").focus();return}
+  if(hi&&e.odo>=hi.odo){err.textContent=`Odometer must be lower than ${fmt0(hi.odo)} km (later charge on ${hi.date}).`;$("#e-odo").focus();return}
+  if(!(e.units>0)||!(e.rate>0)){err.textContent="Enter units used and the charge per unit.";return}e.amount=Math.round(e.units*e.rate*100)/100}
+ else{e.amount=+$("#e-amt").value;if(!(e.amount>0)){err.textContent="Enter the amount.";return}}
+ try{await store.add(e)}catch(x){err.textContent=x&&x.code==="quota_exceeded"?"Storage is full — delete old entries.":"Couldn't save — try again.";return}
+ ["#e-units","#e-amt","#e-note","#e-odo"].forEach(s=>$(s).value="");calc();
+ $("#lsel").value="all";
+});
+/* delete with in-page dialog */
+let onYes=null;
+function ask(t,b,yes,fn){$("#m-t").textContent=t;$("#m-b").textContent=b;$("#m-yes").textContent=yes;onYes=fn;$("#modal").style.display="grid";$("#m-yes").focus()}
+$("#log").onclick=e=>{const b=e.target.closest("[data-del]");if(!b)return;const id=b.dataset.del;ask("Delete this expense?","This can't be undone.","Delete",async()=>{try{await store.del(id)}catch(e){}})};
+$("#m-no").onclick=()=>{$("#modal").style.display="none";onYes=null};
+$("#m-yes").onclick=async()=>{$("#modal").style.display="none";const f=onYes;onYes=null;if(f)await f()};
+
+/* backup & restore (device storage mode) */
+$("#bk").onclick=()=>{const data=JSON.stringify({app:"ev-ledger",v:1,exported:new Date().toISOString(),...local.read()},null,1);
+ const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([data],{type:"application/json"}));a.download="ev-ledger-backup-"+today()+".json";document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)};
+$("#rs").onclick=()=>$("#restore-f").click();
+$("#restore-f").onchange=async ev=>{const f=ev.target.files[0];ev.target.value="";if(!f)return;
+ let o;try{o=JSON.parse(await f.text())}catch(e){ask("Not a backup file","That file couldn't be read.","OK",null);return}
+ if(!o||!o.profile||!Array.isArray(o.expenses)){ask("Not a backup file","That file isn't an EV Ledger backup.","OK",null);return}
+ ask("Restore this backup?",`${o.expenses.length} expenses from ${o.exported?o.exported.slice(0,10):"a backup"} will replace what's on this device.`,"Restore",async()=>{local.write({profile:o.profile,expenses:o.expenses});profile=o.profile;setExp(o.expenses);showDash()})};
+
+/* PWA: offline service worker + install prompt */
+const standalone=matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+const inFrame=(()=>{try{return window.top!==window}catch(e){return true}})();
+const IKEY="ev-ledger-install-dismissed";
+const dismissed=()=>{try{return !!localStorage.getItem(IKEY)}catch(e){return false}};
+let deferredPrompt=null;
+const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+function showInstall(ios){if(standalone||dismissed())return;$("#inst").hidden=false;
+ if(ios){$("#inst-t").innerHTML="In Safari, tap <b style='display:inline;font-size:inherit'>Share</b> ⎋ then <b style='display:inline;font-size:inherit'>Add to Home Screen</b>.";$("#inst-go").hidden=true}}
+$("#inst-x").onclick=()=>{$("#inst").hidden=true;try{localStorage.setItem(IKEY,"1")}catch(e){}};
+async function doInstall(){if(!deferredPrompt)return;deferredPrompt.prompt();try{await deferredPrompt.userChoice}catch(e){}deferredPrompt=null;$("#inst").hidden=true;$("#instbtn").hidden=true}
+$("#inst-go").onclick=doInstall;$("#instbtn").onclick=doInstall;
+addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredPrompt=e;$("#instbtn").hidden=false;showInstall(false)});
+addEventListener("appinstalled",()=>{$("#inst").hidden=true;$("#instbtn").hidden=true});
+if(isIOS&&!standalone&&!inFrame)setTimeout(()=>showInstall(true),1500);
+if("serviceWorker" in navigator&&!inFrame&&location.protocol==="https:"){try{navigator.serviceWorker.register("sw.js").catch(()=>{})}catch(e){}}
+
+/* boot */
+(async()=>{
+ buildOnb();
+ try{store=await cloud()}catch(e){store=null}
+ if(!store)store=local;
+ try{profile=await store.getProfile()}catch(e){profile=null}
+ $("#splash").hidden=true;
+ if(profile)showDash();else $("#onb").hidden=false;
+})();
+}
+</script>
+</body>
+</html>
