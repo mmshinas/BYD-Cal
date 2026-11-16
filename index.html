@@ -106,6 +106,12 @@ label{display:block;font-size:14px;color:var(--mut);margin:0 0 6px}
 .kpi .split .num{color:var(--cy)}
 .kpi .unit{font-size:.55em;font-weight:600;color:var(--mut);margin-left:2px}
 .req{font-size:12px;color:var(--co);margin-left:4px}
+.khead{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.trend{--t:var(--cy);display:inline-flex;align-items:center;gap:7px;padding:5px 12px 5px 6px;border-radius:999px;font-size:13px;font-weight:600;color:var(--t);background:color-mix(in srgb,var(--t) 14%,transparent);border:1px solid color-mix(in srgb,var(--t) 45%,transparent);box-shadow:0 0 16px color-mix(in srgb,var(--t) 22%,transparent);white-space:nowrap}
+.trend i{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:color-mix(in srgb,var(--t) 22%,transparent)}
+.trend svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.trend.high{--t:var(--co)}.trend.low{--t:light-dark(#0a8f5a,#4ade80)}.trend.equal{--t:var(--cy)}
+#k-delta b{font-weight:600}
 .up{color:var(--co)}.dn{color:light-dark(#0a8f5a,#4ade80)}
 .mid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:20px}
 .fig{position:relative;min-height:300px}.fig>svg{position:absolute;inset:0;width:100%;height:100%}
@@ -211,7 +217,7 @@ td.r,th.r{text-align:right;white-space:nowrap;font-family:"Chakra Petch"}
       <div class="shot"><div class="scan"></div><div class="car" id="carimg"></div><div class="floor"></div></div>
     </div>
     <div class="kpis">
-      <div class="kpi big"><small id="k-mlabel">This month</small><div class="num" id="k-month">—</div><small id="k-delta"></small></div>
+      <div class="kpi big"><div class="khead"><small id="k-mlabel">This month</small><span class="trend" id="k-trend" hidden></span></div><div class="num" id="k-month">—</div><small id="k-delta"></small></div>
       <div class="kpi"><small>All-time spend</small><div class="num" id="k-all">—</div></div>
       <div class="kpi"><small>Energy this month</small><div class="num" id="k-kwh">—</div></div>
       <div class="kpi"><small>Avg cost per unit</small><div class="num" id="k-rate">—</div></div>
@@ -359,7 +365,15 @@ function render(){
  const byM={};expenses.forEach(e=>{const k=mkey(e.date);(byM[k]=byM[k]||{tot:0,kwh:0,chg:0,cats:{}});byM[k].tot+=e.amount;byM[k].cats[e.cat]=(byM[k].cats[e.cat]||0)+e.amount;if(e.cat==="charging"){byM[k].kwh+=e.units||0;byM[k].chg+=e.amount}});
  const c=byM[cur]||{tot:0,kwh:0,chg:0},p=byM[prev]||{tot:0};
  $("#k-mlabel").textContent=mname(cur);$("#k-month").textContent=fmt(c.tot);
- if(p.tot>0){const d=(c.tot-p.tot)/p.tot*100;$("#k-delta").innerHTML=`<span class="${d>0?'up':'dn'}">${d>0?'▲':'▼'} ${Math.abs(d).toFixed(0)}%</span> vs ${mname(prev)}`}else $("#k-delta").textContent="No spend recorded last month";
+ $("#k-mlabel").textContent=mname(cur)+" spend";
+ const tr=$("#k-trend");
+ if(p.tot>0){
+  const diff=c.tot-p.tot,pct=Math.abs(diff)/p.tot*100,st=Math.abs(diff)<Math.max(1,p.tot*.005)?"equal":diff>0?"high":"low";
+  const T={high:["High",'<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>'],low:["Low",'<path d="M3 7l6 6 4-4 8 8"/><path d="M15 17h6v-6"/>'],equal:["Equal",'<path d="M5 9.5h14M5 14.5h14"/>']}[st];
+  tr.className="trend "+st;tr.innerHTML=`<i><svg viewBox="0 0 24 24" aria-hidden="true">${T[1]}</svg></i>${T[0]}`;tr.hidden=false;
+  tr.setAttribute("aria-label",T[0]+" compared with "+mname(prev));
+  $("#k-delta").innerHTML=st==="equal"?`Same as ${mname(prev)} <span style="white-space:nowrap">(${fmt(p.tot)})</span>`:`<b class="${st==="high"?"up":"dn"}">${fmt(Math.abs(diff))} (${pct.toFixed(0)}%) ${st==="high"?"more":"less"}</b> than ${mname(prev)} <span style="white-space:nowrap">(${fmt(p.tot)})</span>`;
+ }else{tr.hidden=true;$("#k-delta").textContent=`Nothing logged in ${mname(prev)} to compare`}
  const all=expenses.reduce((s,e)=>s+e.amount,0);$("#k-all").textContent=fmt(all);
  $("#k-kwh").textContent=fmt0(c.kwh)+" kWh";
  const ch=expenses.filter(e=>e.cat==="charging"),u=ch.reduce((s,e)=>s+(e.units||0),0),a=ch.reduce((s,e)=>s+e.amount,0);
