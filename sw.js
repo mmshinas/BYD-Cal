@@ -1,5 +1,5 @@
 /* EV Ledger service worker — bump VERSION whenever you upload changed files */
-const VERSION = "ev-ledger-v1";
+const VERSION = "ev-ledger-v4";
 const SHELL = [
   "./",
   "./index.html",

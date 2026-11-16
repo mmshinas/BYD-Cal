@@ -68,22 +68,25 @@ label{display:block;font-size:14px;color:var(--mut);margin:0 0 6px}
 .sw .pick i{width:26px;height:26px;border-radius:50%;border:1px solid var(--line)}
 .err{color:var(--co);font-size:14px;min-height:20px}
 /* dashboard */
-.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+.top{display:flex;flex-direction:column;align-items:flex-start;gap:12px;margin-bottom:20px}
+#hello{font-weight:500;color:var(--mut)}
+.acts{display:flex;gap:8px;flex-wrap:nowrap;width:100%;overflow-x:auto}
+.acts .btn{min-height:44px;padding:8px 18px;font-size:14px;white-space:nowrap}
+@media(max-width:600px){.acts .btn{flex:1 1 0;padding:8px 6px;font-size:13px}}
 .hero{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:20px;align-items:stretch}
-.stage{position:relative;border-radius:24px;overflow:hidden;min-height:320px;border:1px solid var(--line);
-background:radial-gradient(ellipse 70% 60% at 50% 70%,var(--glow),transparent 70%),linear-gradient(180deg,light-dark(#dfe9f3,#0a1426),light-dark(#f7fbff,#05080f))}
-.stage .lbl{position:absolute;left:22px;top:18px;right:22px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
-.stage .lbl h1{font-size:clamp(28px,4vw,44px)}
-.stage .car{position:absolute;left:4%;right:4%;bottom:8%;height:62%;display:flex;align-items:flex-end;justify-content:center}
-.stage .car img,.stage .car svg{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 20px 24px rgba(0,0,0,.35))}
-.stage .car.photo{inset:0;height:auto}
-.stage .car.photo img{width:100%;height:100%;max-height:none;object-fit:cover;filter:none}
-.stage:has(.photo) .floor{display:none}
-.stage:has(.photo)::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(3,8,18,.72),rgba(3,8,18,0) 42%),linear-gradient(0deg,rgba(61,224,255,.18),transparent 25%);box-shadow:inset 0 0 0 1px rgba(61,224,255,.25)}
-.stage:has(.photo) .lbl{z-index:2;color:#fff}.stage:has(.photo) .lbl .mut{color:rgba(255,255,255,.8)}
-.stage:has(.photo) .chip{background:rgba(5,10,20,.55);color:#fff;border-color:rgba(255,255,255,.25)}
-.stage .scan{z-index:2}
-.stage .floor{position:absolute;left:0;right:0;bottom:0;height:16%;background:linear-gradient(180deg,transparent,var(--glow));border-top:1px solid var(--line)}
+.stage{display:flex;flex-direction:column;border-radius:24px;overflow:hidden;border:1px solid var(--line);background:var(--bg2);box-shadow:0 0 0 1px rgba(61,224,255,.08),0 20px 50px -20px var(--glow)}
+.stage .lbl{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:16px 20px 14px;border-bottom:1px solid var(--line);position:relative}
+.stage .lbl::after{content:"";position:absolute;left:20px;bottom:-1px;width:64px;height:2px;background:var(--cy);box-shadow:0 0 12px var(--cy)}
+.stage .lbl h1{font-size:clamp(26px,4vw,40px);margin:0}
+.stage .lbl .mut{font-size:14px}
+.shot{position:relative;flex:1;min-height:300px;overflow:hidden;background:radial-gradient(ellipse 70% 60% at 50% 70%,var(--glow),transparent 70%),linear-gradient(180deg,light-dark(#dfe9f3,#0a1426),light-dark(#f7fbff,#05080f))}
+.shot .car{position:absolute;left:4%;right:4%;bottom:8%;height:80%;display:flex;align-items:flex-end;justify-content:center}
+.shot .car img,.shot .car svg{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 20px 24px rgba(0,0,0,.35))}
+.shot .car.photo{inset:0;height:auto}
+.shot .car.photo img{width:100%;height:100%;max-height:none;object-fit:cover;filter:none}
+.shot:has(.photo) .floor{display:none}
+.shot .scan{z-index:2}
+.shot .floor{position:absolute;left:0;right:0;bottom:0;height:16%;background:linear-gradient(180deg,transparent,var(--glow));border-top:1px solid var(--line)}
 .scan{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--cy),transparent);opacity:.6;animation:scan 5s ease-in-out infinite}
 @keyframes scan{0%,100%{top:30%}50%{top:88%}}
 @media(prefers-reduced-motion:reduce){.scan,.ring{animation:none}}
@@ -104,9 +107,9 @@ background:radial-gradient(ellipse 70% 60% at 50% 70%,var(--glow),transparent 70
 .bar .t{height:10px;border-radius:10px;background:var(--line);overflow:hidden}.bar .t b{display:block;height:100%;border-radius:10px}
 .bar .v{font-family:"Chakra Petch";white-space:nowrap;text-align:right}
 .low{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:20px;margin-top:20px}
-.seg{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
-.seg button{min-height:44px;padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:transparent;cursor:pointer;font-size:14px}
-.seg button.on{background:var(--cy);color:light-dark(#fff,#04121a);border-color:var(--cy)}
+.typesel{position:relative}
+.typesel i{position:absolute;left:14px;top:50%;width:12px;height:12px;margin-top:-6px;border-radius:50%;pointer-events:none;box-shadow:0 0 10px currentColor}
+.typesel select{padding-left:36px;font-weight:600}
 .calc{display:flex;justify-content:space-between;align-items:baseline;padding:14px 16px;border-radius:14px;border:1px dashed var(--cy);margin:4px 0 14px}
 .calc .num{font-size:26px;color:var(--cy)}
 table{width:100%;border-collapse:collapse;font-size:14px}
@@ -133,7 +136,7 @@ td.r,th.r{text-align:right;white-space:nowrap;font-family:"Chakra Petch"}
 #restore-f{display:none}
 [hidden]{display:none!important}
 @media(max-width:900px){.hero,.mid,.low{grid-template-columns:minmax(0,1fr)}}
-@media(max-width:600px){.g2,.g3{grid-template-columns:minmax(0,1fr)}.stage{min-height:260px}.bar{grid-template-columns:86px minmax(0,1fr) auto}
+@media(max-width:600px){.g2,.g3{grid-template-columns:minmax(0,1fr)}.shot{min-height:0;flex:none;aspect-ratio:16/10}.bar{grid-template-columns:86px minmax(0,1fr) auto}
 .stack thead{display:none}.stack tr{display:grid;padding-block:10px;border-bottom:1px solid var(--line)}.stack td{display:flex;justify-content:space-between;gap:12px;border:0;padding:4px 0}.stack td::before{content:attr(data-l);color:var(--mut);font-family:Sora}}
 </style>
 </head>
@@ -168,16 +171,14 @@ td.r,th.r{text-align:right;white-space:nowrap;font-family:"Chakra Petch"}
 <!-- DASHBOARD -->
 <main id="dash" class="wrap" hidden>
   <div class="top">
-    <div class="brand"><i></i>EV Ledger</div>
-    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="chip" id="hello"></span><button class="btn ghost" id="instbtn" hidden>Install app</button><button class="btn ghost" id="bk" hidden>Backup</button><button class="btn ghost" id="rs" hidden>Restore</button><input type="file" id="restore-f" accept="application/json,.json"><button class="btn ghost" id="editp">Edit profile</button></div>
+    <div class="brand"><i></i>EV Ledger <span id="hello"></span></div>
+    <div class="acts"><button class="btn ghost" id="instbtn" hidden>Install app</button><button class="btn ghost" id="bk" hidden>Backup</button><button class="btn ghost" id="rs" hidden>Restore</button><input type="file" id="restore-f" accept="application/json,.json"><button class="btn ghost" id="editp">Edit profile</button></div>
   </div>
 
   <section class="hero">
     <div class="stage">
       <div class="lbl"><div><span class="mut" id="v-sub"></span><h1 id="v-name"></h1></div><div><span class="chip" id="v-col"></span></div></div>
-      <div class="scan"></div>
-      <div class="car" id="carimg"></div>
-      <div class="floor"></div>
+      <div class="shot"><div class="scan"></div><div class="car" id="carimg"></div><div class="floor"></div></div>
     </div>
     <div class="kpis">
       <div class="kpi big"><small id="k-mlabel">This month</small><div class="num" id="k-month">—</div><small id="k-delta"></small></div>
@@ -197,9 +198,9 @@ td.r,th.r{text-align:right;white-space:nowrap;font-family:"Chakra Petch"}
   <section class="low">
     <div class="panel">
       <h2>Log an expense</h2>
-      <div class="seg" id="cats"></div>
       <form id="ef" novalidate>
-        <div class="row g2"><div><label for="e-date">Date</label><input id="e-date" type="date" required></div><div><label for="e-odo" id="odo-l">Odometer (km) <span class="req">required</span></label><input id="e-odo" type="number" inputmode="numeric" min="0" step="1"></div></div>
+        <div class="row g2" style="margin-bottom:14px"><div><label for="cats">Expense type</label><div class="typesel"><i id="cat-dot"></i><select id="cats"></select></div></div><div><label for="e-date">Date</label><input id="e-date" type="date" required></div></div>
+        <div><label for="e-odo" id="odo-l">Odometer (km) <span class="req">required</span></label><input id="e-odo" type="number" inputmode="numeric" min="0" step="1"></div>
         <p class="note" id="odo-hint" style="margin:6px 0 0"></p>
         <div id="chg" style="margin-top:14px">
           <div class="row g2"><div><label for="e-units">Units used (kWh)</label><input id="e-units" type="number" step="0.01" min="0" inputmode="decimal"></div><div><label for="e-rate">Charge per unit</label><input id="e-rate" type="number" step="0.01" min="0" inputmode="decimal"></div></div>
@@ -299,11 +300,11 @@ $("#editp").onclick=()=>{fillOnb(profile);$("#pcancel").hidden=false;$("#dash").
 
 /* ---------- dashboard ---------- */
 function showDash(){
- $("#onb").hidden=true;$("#dash").hidden=false;
+ $("#onb").hidden=true;$("#dash").hidden=false;scrollTo(0,0);
  const m=MODELS.find(x=>x.id===profile.model)||MODELS[0],col=(COLORS.find(c=>c[0]===profile.color)||COLORS[0]);
  $("#v-name").textContent="BYD "+m.name;$("#v-sub").textContent=profile.year+" model";
  $("#v-col").innerHTML=`<span class="dot" style="background:${col[1]}"></span>${esc(col[0])}`;
- $("#hello").textContent="Hi, "+profile.name.split(" ")[0];
+ $("#hello").textContent="("+profile.name+")";
  $("#carimg").innerHTML=MODEL_IMG[m.id]?`<img src="${MODEL_IMG[m.id]}" alt="BYD ${m.name}" style="object-position:${MODEL_POS[m.id]}">`:carSVG(m.type,col[1],"");
  $("#carimg").classList.toggle("photo",!!MODEL_IMG[m.id]);
  $("#bk").hidden=$("#rs").hidden=store.mode!=="local";
@@ -361,7 +362,7 @@ const svg=$("#chart");
 function draw(){
  const W=svg.clientWidth,H=svg.clientHeight;if(!W)return;
  const sm=W<520,pl=sm?8:56,pb=28,pt=12,iw=W-pl-8,ih=H-pb-pt;
- const mx=Math.max(1,...chartData.map(d=>d.tot));const nice=Math.pow(10,Math.floor(Math.log10(mx)));const top=Math.ceil(mx/nice)*nice;
+ const mx=Math.max(1000,...chartData.map(d=>d.tot));const nice=Math.pow(10,Math.floor(Math.log10(mx)));const top=Math.ceil(mx/nice)*nice;
  const bw=iw/chartData.length;let o="";
  if(!sm)for(let i=0;i<=4;i++){const y=pt+ih-ih*i/4;o+=`<line x1="${pl}" x2="${W-8}" y1="${y}" y2="${y}" stroke="var(--line)"/><text x="${pl-8}" y="${y+4}" text-anchor="end" font-size="11" fill="var(--mut)">${fmt0(top*i/4)}</text>`}
  chartData.forEach((d,i)=>{let y=pt+ih;const x=pl+i*bw+bw*.18,w=bw*.64;
@@ -374,8 +375,9 @@ new ResizeObserver(draw).observe(svg);
 $("#msel").onchange=render;$("#lsel").onchange=drawLog;
 
 /* expense form */
-$("#cats").innerHTML=CATS.map(c=>`<button type="button" data-cat="${c.id}" class="${c.id===cat?'on':''}">${c.n}</button>`).join('');
-$("#cats").onclick=e=>{const b=e.target.closest("button");if(!b)return;cat=b.dataset.cat;document.querySelectorAll("#cats button").forEach(x=>x.classList.toggle("on",x===b));$("#chg").hidden=cat!=="charging";$("#oth").hidden=cat==="charging";$("#odo-l").innerHTML=cat==="charging"?'Odometer (km) <span class="req">required</span>':'Odometer (km, optional)';odoHint()};
+$("#cats").innerHTML=CATS.map(c=>`<option value="${c.id}">${c.n}</option>`).join('');
+$("#cats").value=cat;$("#cat-dot").style.background=catOf(cat).c;
+$("#cats").onchange=e=>{cat=e.target.value;$("#cat-dot").style.background=catOf(cat).c;$("#chg").hidden=cat!=="charging";$("#oth").hidden=cat==="charging";$("#odo-l").innerHTML=cat==="charging"?'Odometer (km) <span class="req">required</span>':'Odometer (km, optional)';odoHint()};
 $("#e-date").addEventListener("change",odoHint);
 const calc=()=>{const t=(+$("#e-units").value||0)*(+$("#e-rate").value||0);$("#e-total").textContent=fmt(t);return t};
 $("#e-units").oninput=calc;$("#e-rate").oninput=calc;
